@@ -20,7 +20,7 @@ int cmpfunc(const void *a, const void *b) {
 
 int main(int argc, char **argv) {
 
-    int n = 130000000;
+    int n = atoi(1);
     int *original_array = NULL;
 //    int *copy_original_array = NULL;
     clock_t t;
