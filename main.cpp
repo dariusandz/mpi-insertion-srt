@@ -1,6 +1,5 @@
 #include <iostream>
-#include <mpi.h>
-//#include "/usr/local/Cellar/open-mpi/4.0.3/include/mpi.h"
+#include "/usr/local/Cellar/open-mpi/4.0.3/include/mpi.h"
 
 void insertionSort(int* arr, int n) {
     int i, key, j;
@@ -47,10 +46,10 @@ int main() {
 
     MPI_Init(NULL, NULL);
 
-    int worldSize = 5; // Procesu skaicius
+    int worldSize; // Procesu skaicius
     MPI_Comm_size(MPI_COMM_WORLD, &worldSize);
 
-    int worldRank = 0; // Proceso id
+    int worldRank; // Proceso id
     MPI_Comm_rank(MPI_COMM_WORLD, &worldRank);
 
     char procName[MPI_MAX_PROCESSOR_NAME];
@@ -68,15 +67,16 @@ int main() {
     std::cout << worldSize << " number of processes" << std::endl;
     if (worldRank == 0) {
         array = generateArray(N, M);
-        for (int i = 0; i < worldSize - 1; i++) {
+        for (int i = 0; i < worldSize; i++) {
             int lwr = arrSizeToProccess * i;
-            int* subArray = &array[lwr];
-          MPI_Send(&array[lwr], arrSizeToProccess, MPI_INT, i + 1, 0, MPI_COMM_WORLD);
+            int* subArray = new int[arrSizeToProccess];
+            memcpy(subArray, &array[lwr], arrSizeToProccess * sizeof(int));
+            MPI_Send(subArray, arrSizeToProccess, MPI_INT, i + 1, 0, MPI_COMM_WORLD);
         }
     } else {
-        int *buf;
-        MPI_Recv(buf, arrSizeToProccess, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-        std::cout << "Process " << worldRank << " received " << buf << std::endl;
+        int *buf = new int[arrSizeToProccess];
+        MPI_Recv(&buf, arrSizeToProccess, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+        std::cout << "Process " << worldRank << " received " << &buf << std::endl;
         insertionSort(buf, arrSizeToProccess);
     }
 
